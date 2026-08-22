@@ -6,178 +6,130 @@
 <title>Payment Request Query Desk — GrayQuest Finance</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#0E1420; --panel:#151D2C; --panel-2:#1B2536; --line:#26324a;
-    --line-soft:#1f2a3e; --txt:#E6EBF5; --muted:#8B98AF; --muted-2:#66748f;
-    --flag:#FFB020; --flag-dim:#7a5a1e; --sent:#2DD4A7; --sent-dim:#1e5647;
-    --danger:#F4756B; --focus:#6EA8FF;
-    --radius:12px;
+    --ink:#0E1420; --panel:#151D2C; --panel-2:#1B2536; --line:#26324a; --line-soft:#1f2a3e;
+    --txt:#E6EBF5; --muted:#8B98AF; --head:#0B1322;
+    --flag:#FFB020; --sent:#2DD4A7; --sent-dim:#1e5647; --danger:#F4756B; --focus:#6EA8FF;
+    --row-alt:#131b29;
   }
   *{box-sizing:border-box}
   html,body{margin:0}
   body{
-    background:
-      radial-gradient(1200px 600px at 85% -10%, #16233a 0%, transparent 55%),
-      radial-gradient(900px 500px at -5% 0%, #171f2f 0%, transparent 50%),
-      var(--ink);
-    color:var(--txt);
+    background:var(--ink); color:var(--txt);
     font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-    font-size:14px; line-height:1.5; min-height:100vh;
-    -webkit-font-smoothing:antialiased;
+    font-size:13px; -webkit-font-smoothing:antialiased;
   }
-  .mono{font-family:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace}
+  .mono{font-family:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace}
 
-  /* ---- Top bar ---- */
   header.bar{
-    position:sticky; top:0; z-index:20;
-    display:flex; align-items:center; gap:18px; flex-wrap:wrap;
-    padding:14px 22px;
-    background:rgba(14,20,32,.82); backdrop-filter:blur(10px);
+    position:sticky; top:0; z-index:30;
+    display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+    padding:12px 20px; background:rgba(14,20,32,.92); backdrop-filter:blur(10px);
     border-bottom:1px solid var(--line);
   }
-  .brand{display:flex; align-items:baseline; gap:10px}
-  .brand h1{
-    font-family:'Space Grotesk',sans-serif; font-weight:700;
-    font-size:16px; letter-spacing:.2px; margin:0;
-  }
-  .brand .sub{color:var(--muted); font-size:11.5px; letter-spacing:.14em; text-transform:uppercase}
+  .brand h1{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:15px; margin:0; display:inline}
+  .brand .sub{color:var(--muted); font-size:11px; letter-spacing:.14em; text-transform:uppercase; margin-left:8px}
   .counts{display:flex; gap:8px; margin-left:auto; flex-wrap:wrap}
-  .pill{
-    display:inline-flex; align-items:center; gap:7px;
-    padding:6px 11px; border-radius:999px; font-size:12px; font-weight:600;
-    border:1px solid var(--line); background:var(--panel);
-  }
-  .pill .dot{width:7px; height:7px; border-radius:50%}
-  .pill.flag .dot{background:var(--flag); box-shadow:0 0 0 3px rgba(255,176,32,.15)}
+  .pill{display:inline-flex; align-items:center; gap:7px; padding:6px 11px; border-radius:999px;
+    font-size:12px; font-weight:600; border:1px solid var(--line); background:var(--panel)}
+  .pill .dot{width:7px;height:7px;border-radius:50%}
+  .pill.flag .dot{background:var(--flag)}
   .pill.sent .dot{background:var(--sent)}
   .pill b{font-family:'JetBrains Mono',monospace}
 
-  /* ---- Controls row ---- */
-  .controls{
-    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
-    padding:14px 22px 6px;
-  }
-  .search{position:relative; flex:1 1 240px; max-width:360px}
-  .search input{width:100%; padding:9px 12px 9px 34px}
-  .search svg{position:absolute; left:11px; top:50%; transform:translateY(-50%); opacity:.5}
+  .controls{display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:12px 20px 4px}
+  .search{position:relative; flex:1 1 220px; max-width:340px}
+  .search input{width:100%; padding:8px 12px 8px 32px}
+  .search svg{position:absolute; left:10px; top:50%; transform:translateY(-50%); opacity:.5}
   input,select,textarea,button{font-family:inherit; font-size:13px; color:var(--txt)}
-  input,select,textarea{
-    background:var(--panel-2); border:1px solid var(--line);
-    border-radius:9px; padding:9px 11px; outline:none; transition:border-color .15s,box-shadow .15s;
-  }
+  input,select,textarea{background:var(--panel-2); border:1px solid var(--line); border-radius:8px;
+    padding:8px 10px; outline:none; transition:border-color .15s,box-shadow .15s}
   input:focus,select:focus,textarea:focus{border-color:var(--focus); box-shadow:0 0 0 3px rgba(110,168,255,.16)}
-  textarea{resize:vertical; line-height:1.55}
-  .seg{display:inline-flex; background:var(--panel-2); border:1px solid var(--line); border-radius:9px; overflow:hidden}
-  .seg button{background:transparent; border:0; padding:8px 13px; cursor:pointer; color:var(--muted); font-weight:600}
+  .seg{display:inline-flex; background:var(--panel-2); border:1px solid var(--line); border-radius:8px; overflow:hidden}
+  .seg button{background:transparent; border:0; padding:7px 12px; cursor:pointer; color:var(--muted); font-weight:600}
   .seg button.on{background:var(--panel); color:var(--txt)}
   .seg button+button{border-left:1px solid var(--line)}
-  button.btn{
-    cursor:pointer; border:1px solid var(--line); background:var(--panel);
-    border-radius:9px; padding:9px 13px; font-weight:600; transition:.15s;
-    display:inline-flex; align-items:center; gap:7px;
-  }
+  button.btn{cursor:pointer; border:1px solid var(--line); background:var(--panel); border-radius:8px;
+    padding:8px 12px; font-weight:600; transition:.15s; display:inline-flex; align-items:center; gap:7px}
   button.btn:hover{border-color:#33445f; background:var(--panel-2)}
   button.btn.ghost{background:transparent}
   button.btn:disabled{opacity:.45; cursor:not-allowed}
+  .btn.primary{border-color:var(--flag); color:var(--flag)}
 
-  main{padding:12px 22px 80px; max-width:1120px; margin:0 auto}
-
-  .note{
-    color:var(--muted); font-size:12.5px; padding:10px 22px 0; max-width:1120px; margin:0 auto;
-  }
-  .note code{background:var(--panel-2); border:1px solid var(--line); border-radius:5px; padding:1px 6px; font-family:'JetBrains Mono',monospace; font-size:11.5px}
-  #errBanner{max-width:1120px; margin:12px auto 0; padding:14px 18px; border-radius:11px;
+  .note{color:var(--muted); font-size:12px; padding:8px 20px 0}
+  .note a{color:var(--focus); text-decoration:none}
+  .note a:hover{text-decoration:underline}
+  #errBanner{margin:10px 20px 0; padding:12px 16px; border-radius:10px;
     background:rgba(244,117,107,.09); border:1px solid rgba(244,117,107,.4); border-left:3px solid var(--danger);
-    color:#ffd9d4; font-size:13px; line-height:1.65}
+    color:#ffd9d4; font-size:12.5px; line-height:1.6; display:none}
   #errBanner b{color:#fff}
-  #errBanner .mono{font-size:11px}
+  #errBanner code{background:#1c1116; border:1px solid #4a2a2a; border-radius:5px; padding:1px 6px; font-family:'JetBrains Mono',monospace; font-size:11px}
 
-  /* ---- Card ---- */
-  .grid{display:flex; flex-direction:column; gap:14px; margin-top:14px}
-  .card{
-    position:relative; background:var(--panel); border:1px solid var(--line);
-    border-radius:var(--radius); overflow:hidden;
+  /* ---- Spreadsheet ---- */
+  .tableWrap{margin:12px 12px 60px; border:1px solid var(--line); border-radius:12px; overflow:auto; max-height:calc(100vh - 150px)}
+  table{border-collapse:separate; border-spacing:0; width:max-content; min-width:100%; font-size:12.5px}
+  thead th{
+    position:sticky; top:0; z-index:10; background:var(--head); color:#cdd8ea;
+    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:11.5px; letter-spacing:.02em;
+    text-align:left; padding:11px 12px; white-space:nowrap; border-bottom:2px solid var(--line);
+    border-right:1px solid var(--line-soft);
   }
-  .card::before{content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--flag)}
-  .card.isSent::before{background:var(--sent)}
-  .card.localDone{opacity:.62}
-  .chead{
-    display:flex; align-items:center; gap:12px; flex-wrap:wrap;
-    padding:14px 16px 12px 19px; border-bottom:1px solid var(--line-soft);
-  }
-  .appid{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:15px; letter-spacing:.3px}
-  .appid .k{color:var(--muted); font-weight:500; font-size:11px; letter-spacing:.14em; text-transform:uppercase; margin-right:6px}
-  .tag{font-size:11px; font-weight:600; padding:3px 9px; border-radius:6px; border:1px solid var(--line)}
-  .tag.type{color:#cbd6ea; background:var(--panel-2)}
-  .tag.flagT{color:var(--flag); border-color:var(--flag-dim); background:rgba(255,176,32,.08)}
-  .tag.sentT{color:var(--sent); border-color:var(--sent-dim); background:rgba(45,212,167,.08)}
-  .to{margin-left:auto; text-align:right; font-size:12px}
-  .to .lbl{color:var(--muted); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase}
-  .to .addr{font-family:'JetBrains Mono',monospace; color:#dfe7f5}
+  thead th:last-child{ position:sticky; right:0; z-index:12; box-shadow:-8px 0 12px -8px rgba(0,0,0,.6) }
+  tbody td{padding:9px 12px; border-bottom:1px solid var(--line-soft); border-right:1px solid var(--line-soft);
+    white-space:nowrap; vertical-align:middle; max-width:340px; overflow:hidden; text-overflow:ellipsis}
+  tbody tr:nth-child(even){background:var(--row-alt)}
+  tbody tr:hover{background:#182234}
+  tbody tr.isSent{opacity:.66}
+  td.wrap{white-space:normal; min-width:220px; max-width:360px}
+  td.num{font-family:'JetBrains Mono',monospace; text-align:right}
+  td.mono{font-family:'JetBrains Mono',monospace}
+  .appid{font-family:'JetBrains Mono',monospace; font-weight:600; color:#e7eefb}
+  .tag{display:inline-block; font-size:10.5px; font-weight:600; padding:2px 8px; border-radius:5px; border:1px solid var(--line); background:var(--panel-2); color:#cbd6ea}
+  .flagcell{color:var(--flag); font-weight:600}
+  .remark-me{color:#ffe4ad}
 
-  .cbody{display:grid; grid-template-columns:1fr 1fr; gap:0}
-  @media (max-width:820px){ .cbody{grid-template-columns:1fr} }
-  .col{padding:14px 16px}
-  .col.left{border-right:1px solid var(--line-soft)}
-  @media (max-width:820px){ .col.left{border-right:0; border-bottom:1px solid var(--line-soft)} }
+  /* sticky action column */
+  td.act{position:sticky; right:0; z-index:8; background:var(--panel);
+    box-shadow:-8px 0 12px -8px rgba(0,0,0,.6); text-align:center; padding:7px 12px}
+  tr:nth-child(even) td.act{background:#141d2b}
+  tr:hover td.act{background:#182234}
+  .sendBtn{background:linear-gradient(180deg,#ffbe3d,#f5a623); color:#221704; border:0; font-weight:700;
+    padding:8px 14px; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:7px; white-space:nowrap}
+  .sendBtn:hover{filter:brightness(1.06)}
+  .sendBtn:disabled{opacity:.5; cursor:not-allowed; filter:none}
+  .sentBadge{display:inline-flex; align-items:center; gap:6px; color:var(--sent); font-weight:600; font-size:12px}
+  .resend{margin-left:8px; font-size:11px; color:var(--muted); background:transparent; border:1px solid var(--line); border-radius:6px; padding:4px 8px; cursor:pointer}
+  .resend:hover{border-color:#33445f; color:var(--txt)}
 
-  .kv{display:grid; grid-template-columns:132px 1fr; gap:6px 12px; font-size:12.5px}
-  .kv dt{color:var(--muted)}
-  .kv dd{margin:0; word-break:break-word}
-  .section-h{font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); margin:2px 0 9px}
-  .remark-box{
-    background:var(--panel-2); border:1px solid var(--line); border-left:2px solid var(--flag);
-    border-radius:8px; padding:9px 11px; font-size:13px; white-space:pre-wrap;
-  }
-  .spoc-remark{background:transparent; border:1px dashed var(--line); border-left:2px solid #3a4a66}
+  .empty{text-align:center; padding:60px 20px; color:var(--muted)}
+  .empty .big{font-family:'Space Grotesk',sans-serif; font-size:19px; color:var(--txt); margin-bottom:8px}
+  .spinner{width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--flag);border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:-2px}
+  @keyframes spin{to{transform:rotate(360deg)}}
 
-  .mailField{margin-top:12px}
-  .mailField label{display:block; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin-bottom:5px}
-  .mailField input, .mailField textarea{width:100%}
-
-  .cfoot{
-    display:flex; align-items:center; gap:9px; flex-wrap:wrap;
-    padding:12px 16px; border-top:1px solid var(--line-soft); background:var(--panel-2)
-  }
-  .cfoot .spacer{flex:1}
-  .send{
-    background:linear-gradient(180deg,#ffbe3d,#f5a623); color:#221704; border:0;
-    font-weight:700; padding:10px 15px; border-radius:9px; cursor:pointer;
-    display:inline-flex; align-items:center; gap:8px; box-shadow:0 1px 0 rgba(255,255,255,.2) inset;
-  }
-  .send:hover{filter:brightness(1.05)}
-  .toast{position:fixed; bottom:22px; left:50%; transform:translateX(-50%) translateY(20px);
+  .toast{position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(20px);
     background:#0b1120; border:1px solid var(--line); color:var(--txt); padding:11px 16px; border-radius:10px;
-    font-size:13px; opacity:0; transition:.25s; pointer-events:none; z-index:50; box-shadow:0 8px 30px rgba(0,0,0,.5)}
+    font-size:13px; opacity:0; transition:.25s; pointer-events:none; z-index:60; box-shadow:0 8px 30px rgba(0,0,0,.5)}
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
 
-  .empty{text-align:center; padding:70px 20px; color:var(--muted)}
-  .empty .big{font-family:'Space Grotesk',sans-serif; font-size:20px; color:var(--txt); margin-bottom:8px}
-
-  /* ---- Setup / paste drawer ---- */
   dialog{border:1px solid var(--line); background:var(--panel); color:var(--txt); border-radius:14px; padding:0; width:min(620px,94vw)}
-  dialog::backdrop{background:rgba(6,10,18,.6); backdrop-filter:blur(3px)}
-  .dlg-h{padding:16px 18px; border-bottom:1px solid var(--line); font-family:'Space Grotesk',sans-serif; font-weight:700; display:flex; align-items:center; justify-content:space-between}
+  dialog::backdrop{background:rgba(6,10,18,.6)}
+  .dlg-h{padding:15px 18px; border-bottom:1px solid var(--line); font-family:'Space Grotesk',sans-serif; font-weight:700; display:flex; align-items:center; justify-content:space-between}
   .dlg-b{padding:18px}
   .dlg-b label{display:block; font-size:12px; color:var(--muted); margin:14px 0 5px}
+  .dlg-b label:first-child{margin-top:0}
   .dlg-b input,.dlg-b textarea{width:100%}
   .dlg-f{padding:14px 18px; border-top:1px solid var(--line); display:flex; gap:10px; justify-content:flex-end}
-  .hint{font-size:11.5px; color:var(--muted); margin-top:6px}
-  a.link{color:var(--focus); text-decoration:none}
-  a.link:hover{text-decoration:underline}
-  .spinner{width:15px;height:15px;border:2px solid var(--line);border-top-color:var(--flag);border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
-  @keyframes spin{to{transform:rotate(360deg)}}
+  .hint{font-size:11.5px; color:var(--muted); margin-top:6px; line-height:1.55}
+  .hint code{background:var(--panel-2); border:1px solid var(--line); border-radius:5px; padding:1px 6px; font-family:'JetBrains Mono',monospace; font-size:11px}
+  .warnbox{margin-top:14px; padding:10px 12px; border-radius:8px; background:rgba(255,176,32,.08); border:1px solid rgba(255,176,32,.35); color:#ffe4ad; font-size:12px; line-height:1.55}
   :focus-visible{outline:2px solid var(--focus); outline-offset:2px}
 </style>
 </head>
 <body>
 <header class="bar">
-  <div class="brand">
-    <h1>Payment Request Query Desk</h1>
-    <span class="sub">GrayQuest Finance</span>
-  </div>
+  <div class="brand"><h1>Payment Request Query Desk</h1><span class="sub">GrayQuest Finance</span></div>
   <div class="counts">
     <span class="pill flag"><span class="dot"></span>Pending&nbsp;<b id="cPending">0</b></span>
     <span class="pill sent"><span class="dot"></span>Sent&nbsp;<b id="cSent">0</b></span>
@@ -194,21 +146,26 @@
     <button data-view="sent">Sent</button>
     <button data-view="all">All</button>
   </div>
-  <button class="btn ghost" id="sendAllBtn" style="display:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>Send all pending</button>
+  <button class="btn primary" id="sendAllBtn" style="display:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>Send all pending</button>
   <button class="btn ghost" id="refreshBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>Refresh</button>
-  <button class="btn ghost" id="setupBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6h.09A1.65 1.65 0 0 0 10.5 3.09V3a2 2 0 0 1 4 0v.09A1.65 1.65 0 0 0 16 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 22.91 9H23a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Setup</button>
+  <button class="btn ghost" id="setupBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6h.09A1.65 1.65 0 0 0 10.5 3.09V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Setup</button>
 </div>
 
-<div id="errBanner" style="display:none"></div>
+<div id="errBanner"></div>
 <p class="note" id="statusNote"></p>
 
-<main>
-  <div class="grid" id="grid"></div>
-</main>
+<div class="tableWrap">
+  <table id="grid">
+    <thead>
+      <tr id="headRow"></tr>
+    </thead>
+    <tbody id="body"></tbody>
+  </table>
+</div>
 
 <div class="toast" id="toast"></div>
 
-<!-- Setup dialog -->
+<!-- Setup -->
 <dialog id="setupDlg">
   <div class="dlg-h">Setup <button class="btn ghost" id="closeSetup" style="padding:4px 8px">✕</button></div>
   <div class="dlg-b">
@@ -216,236 +173,250 @@
     <input id="cfgId" class="mono" placeholder="12S3TK7Cuwx…"/>
     <label>Tab GID</label>
     <input id="cfgGid" class="mono" placeholder="1474374026"/>
-    <div class="hint">Live read ke liye sheet <b>“Anyone with the link → Viewer”</b> hona chahiye. Data private rakhna ho to niche <b>Paste mode</b> use karo — sharing change karne ki zarurat nahi.</div>
 
-    <label>Your name (email signature)</label>
+    <label>Auto-send Web App URL (Apps Script /exec)</label>
+    <input id="cfgExec" class="mono" placeholder="https://script.google.com/macros/s/AKfy.../exec"/>
+    <div class="hint">Ye URL daalte hi &ldquo;Send Mail&rdquo; button <b>seedha mail bhej dega</b> (Gmail window nahi khulegi) aur sheet ke <b>Mail Status</b> column me &ldquo;Sent&rdquo; likh dega. URL na hone par button Gmail compose khol dega.</div>
+
+    <label>Your name (signature)</label>
     <input id="cfgSender" placeholder="Ganesh"/>
     <label>Signature line</label>
     <input id="cfgTeam" placeholder="GrayQuest Finance Team"/>
-    <label>CC (optional, comma separated)</label>
+    <label>CC (optional)</label>
     <input id="cfgCc" class="mono" placeholder="finance@grayquest.com"/>
 
-    <label style="margin-top:18px">Auto-send Web App URL (optional \u2014 Apps Script)</label>
-    <div class="hint">Agar Apps Script deploy kiya hai, uska <code>/exec</code> URL yahan daalo. Tab &ldquo;Send&rdquo; button <b>seedha mail bhej dega</b> aur sheet me &ldquo;Sent&rdquo; likh dega \u2014 Gmail window nahi khulegi. Blank rakho to Gmail-compose mode chalega.</div>
-    <input id="cfgExec" class="mono" placeholder="https://script.google.com/macros/s/AKfy.../exec"/>
-
-    <label style="margin-top:18px">Paste mode — sheet ka data yahan paste karo (optional)</label>
-    <div class="hint">Sheet me range <code>A1:U</code> select → Copy → yahan paste (Tab-separated). Ye live fetch ko override karega. Blank rakho to live sheet se aayega.</div>
-    <textarea id="cfgPaste" rows="4" class="mono" placeholder="Timestamp&#9;SPOC Email&#9;Payment Date&#9;App ID&#9;…"></textarea>
+    <label>Paste mode (optional — private, no sharing needed)</label>
+    <div class="hint">Sheet me <code>A1:V</code> select → Copy → yahan paste. Ye live fetch ko override karega. Blank rakho to live sheet se aayega.</div>
+    <textarea id="cfgPaste" rows="3" class="mono" placeholder="Timestamp&#9;SPOC Email&#9;…"></textarea>
   </div>
   <div class="dlg-f">
     <button class="btn ghost" id="clearPaste">Clear paste</button>
-    <button class="btn" id="saveSetup" style="border-color:var(--flag);color:var(--flag)">Save &amp; reload</button>
+    <button class="btn primary" id="saveSetup">Save &amp; reload</button>
   </div>
 </dialog>
 
 <script>
 /* ============================================================
-   CONFIG — pre-filled with your sheet. Change anytime via Setup.
+   CONFIG — sheet already filled in. Change via Setup anytime.
    ============================================================ */
-const DEFAULTS = {
+var DEFAULTS = {
   id:  "12S3TK7CuwxtTuLW7mf65b3VlfTew9GkZKSz9CqvibR8",
   gid: "1474374026",
+  exec: "",                 // <-- AutoSend.gs /exec URL yahan (ya Setup se)
   sender: "Ganesh",
   team: "GrayQuest Finance Team",
   cc: "",
-  exec: "",
   paste: ""
 };
-const TRIGGER = "please check my remark";   // column L value that flags a row
+var TRIGGER = "please check my remark";  // column L value that flags a row
 
-/* Column map (0-indexed, sheet order A..U) */
-const C = {
+/* Column map (0-indexed, A..V) */
+var C = {
   timestamp:0, email:1, payDate:2, appId:3, amount:4, method:5, utrRef:6,
   receivedFrom:7, sourceAcc:8, payType:9, spocRemark:10,
-  financeRemark:11,        // L  -> the dropdown
-  financeTeamRemark:12,    // M  -> YOUR remark
-  payId:13, amt2:14, accNo:15, ifsc:16, utr2:17, txnDate:18, payerName:19, // N..T details
-  confirmation:20,         // U  (extra, included if present)
-  mailStatus:21            // V  (used to detect already-sent)
+  financeRemark:11,        // L  -> dropdown ("Please check my remark")
+  financeTeamRemark:12,    // M  -> your remark
+  payId:13, amt2:14, accNo:15, ifsc:16, utr2:17, txnDate:18, payerName:19, // N..T
+  confirmation:20,         // U
+  mailStatus:21            // V  -> "Sent - ..." written here
 };
 
-const cfg = loadCfg();
-const doneSet = new Set(JSON.parse(localStorage.getItem("pqd_done")||"[]")); // local "emailed" marks
-let ROWS = [];        // parsed data rows (array of arrays)
-let view = "pending";
+/* Columns to show in the spreadsheet (label + which C key + css) */
+var COLS = [
+  {h:"Timestamp",     k:C.timestamp,        cls:"mono"},
+  {h:"SPOC Email",    k:C.email,            cls:"mono"},
+  {h:"Payment Date",  k:C.payDate,          cls:""},
+  {h:"App ID",        k:C.appId,            cls:"appid"},
+  {h:"Amount",        k:C.amount,           cls:"num"},
+  {h:"Method",        k:C.method,           cls:""},
+  {h:"UTR / Bank Ref",k:C.utrRef,           cls:"mono"},
+  {h:"Received From", k:C.receivedFrom,     cls:""},
+  {h:"Source Account",k:C.sourceAcc,        cls:"mono"},
+  {h:"Payment Type",  k:C.payType,          cls:"tagcol"},
+  {h:"SPOC Remark",   k:C.spocRemark,       cls:"wrap"},
+  {h:"Finance Remark",k:C.financeRemark,    cls:"flag"},
+  {h:"My Remark",     k:C.financeTeamRemark,cls:"wrap me"},
+  {h:"PAY ID",        k:C.payId,            cls:"mono"},
+  {h:"Amount (N-T)",  k:C.amt2,             cls:"num"},
+  {h:"A/C No",        k:C.accNo,            cls:"mono"},
+  {h:"IFSC Code",     k:C.ifsc,             cls:"mono"},
+  {h:"UTR / Ref No",  k:C.utr2,             cls:"mono"},
+  {h:"Txn Date",      k:C.txnDate,          cls:""},
+  {h:"Payer Name",    k:C.payerName,        cls:""},
+  {h:"Additional Remark",k:C.confirmation,  cls:"wrap"}
+];
+
+var cfg = loadCfg();
+var doneSet = new Set(JSON.parse(localStorage.getItem("pqd_done")||"[]"));
+var ROWS = [];
+var view = "pending";
 
 /* ---------- boot ---------- */
 initSetupForm();
+buildHead();
 bindUI();
 load();
 
 /* ============================================================ */
 function loadCfg(){
-  let s={}; try{ s=JSON.parse(localStorage.getItem("pqd_cfg")||"{}"); }catch(e){}
+  var s={}; try{ s=JSON.parse(localStorage.getItem("pqd_cfg")||"{}"); }catch(e){}
   return Object.assign({}, DEFAULTS, s);
 }
 function saveCfg(){ localStorage.setItem("pqd_cfg", JSON.stringify(cfg)); }
-function saveDone(){ localStorage.setItem("pqd_done", JSON.stringify([...doneSet])); }
+function saveDone(){ localStorage.setItem("pqd_done", JSON.stringify([].concat(Array.from(doneSet)))); }
+function val(id){ return document.getElementById(id).value.trim(); }
+function setVal(id,v){ document.getElementById(id).value = v||""; }
 
-function bindUI(){
-  document.getElementById("refreshBtn").onclick = load;
-  document.getElementById("setupBtn").onclick = ()=>document.getElementById("setupDlg").showModal();
-  document.getElementById("closeSetup").onclick = ()=>document.getElementById("setupDlg").close();
-  document.getElementById("search").addEventListener("input", render);
-  document.querySelectorAll("#viewSeg button").forEach(b=>{
-    b.onclick=()=>{ document.querySelectorAll("#viewSeg button").forEach(x=>x.classList.remove("on"));
-      b.classList.add("on"); view=b.dataset.view; render(); };
-  });
-  document.getElementById("saveSetup").onclick = ()=>{
-    cfg.id=val("cfgId"); cfg.gid=val("cfgGid"); cfg.sender=val("cfgSender");
-    cfg.team=val("cfgTeam"); cfg.cc=val("cfgCc"); cfg.exec=val("cfgExec"); cfg.paste=document.getElementById("cfgPaste").value.trim();
-    saveCfg(); document.getElementById("setupDlg").close(); load();
-  };
-  document.getElementById("clearPaste").onclick=()=>{ document.getElementById("cfgPaste").value=""; };
-  document.getElementById("sendAllBtn").onclick = sendAllPending;
-}
 function initSetupForm(){
-  setVal("cfgId",cfg.id); setVal("cfgGid",cfg.gid); setVal("cfgSender",cfg.sender);
-  setVal("cfgTeam",cfg.team); setVal("cfgCc",cfg.cc); setVal("cfgExec",cfg.exec);
+  setVal("cfgId",cfg.id); setVal("cfgGid",cfg.gid); setVal("cfgExec",cfg.exec);
+  setVal("cfgSender",cfg.sender); setVal("cfgTeam",cfg.team); setVal("cfgCc",cfg.cc);
   document.getElementById("cfgPaste").value = cfg.paste||"";
 }
-function val(id){ return document.getElementById(id).value.trim(); }
-function setVal(id,v){ document.getElementById(id).value=v||""; }
+function bindUI(){
+  document.getElementById("refreshBtn").onclick = load;
+  document.getElementById("setupBtn").onclick = function(){ document.getElementById("setupDlg").showModal(); };
+  document.getElementById("closeSetup").onclick = function(){ document.getElementById("setupDlg").close(); };
+  document.getElementById("search").addEventListener("input", render);
+  document.getElementById("sendAllBtn").onclick = sendAllPending;
+  var segs = document.querySelectorAll("#viewSeg button");
+  segs.forEach(function(b){ b.onclick=function(){
+    segs.forEach(function(x){x.classList.remove("on");}); b.classList.add("on"); view=b.dataset.view; render();
+  };});
+  document.getElementById("saveSetup").onclick = function(){
+    cfg.id=val("cfgId"); cfg.gid=val("cfgGid"); cfg.exec=val("cfgExec");
+    cfg.sender=val("cfgSender"); cfg.team=val("cfgTeam"); cfg.cc=val("cfgCc");
+    cfg.paste=document.getElementById("cfgPaste").value.trim();
+    saveCfg(); document.getElementById("setupDlg").close(); load();
+  };
+  document.getElementById("clearPaste").onclick = function(){ document.getElementById("cfgPaste").value=""; };
+}
+function buildHead(){
+  var tr=document.getElementById("headRow"); tr.innerHTML="";
+  COLS.forEach(function(c){ var th=document.createElement("th"); th.textContent=c.h; tr.appendChild(th); });
+  var th=document.createElement("th"); th.textContent="Mail Sent"; tr.appendChild(th);
+}
 
 /* ---------- data loading ---------- */
 function load(){
-  banner("");  // clear any old error
-  note('<span class="spinner"></span>&nbsp; Loading\u2026');
-  // Paste mode wins if provided
+  banner(""); note('<span class="spinner"></span>&nbsp; Loading\u2026');
   if(cfg.paste){
     try{ ROWS=parseTSV(cfg.paste); afterLoad("Paste mode"); }
     catch(e){ fail("Paste parse error: "+esc(e.message)); }
     return;
   }
-  // 1) Try published/exported CSV (reliable text, easy to parse).
   fetchCsv()
-    .then(rows=>{ ROWS=rows; afterLoad("Live sheet (CSV)"); })
-    .catch(csvErr=>{
-      // 2) Fall back to gviz JSONP.
-      note('<span class="spinner"></span>&nbsp; CSV se nahi aaya, dusra tareeka try kar raha hun\u2026');
+    .then(function(rows){ ROWS=rows; afterLoad("Live sheet"); })
+    .catch(function(csvErr){
+      note('<span class="spinner"></span>&nbsp; dusra tareeka try kar raha hun\u2026');
       fetchGviz()
-        .then(rows=>{ ROWS=rows; afterLoad("Live sheet (gviz)"); })
-        .catch(gvizErr=>{
-          fail(
-            'Sheet ka data fetch nahi ho paya.<br>'+
-            '<b>Sabse aam wajah:</b> sheet public nahi hai. Ise theek karo:<br>'+
-            '1. Sheet me <b>Share</b> \u2192 General access \u2192 <b>Anyone with the link \u2192 Viewer</b>.<br>'+
-            '2. Ya <b>File \u2192 Share \u2192 Publish to web</b> se publish karo.<br>'+
-            'Fir yahan <b>Refresh</b> dabao. Nahi to <b>Setup \u2192 Paste mode</b> use karo (private-safe).<br>'+
-            '<span class="mono" style="opacity:.6">CSV: '+esc(csvErr.message)+' | gviz: '+esc(gvizErr.message)+'</span>'
-          );
+        .then(function(rows){ ROWS=rows; afterLoad("Live sheet"); })
+        .catch(function(gvizErr){
+          fail('Sheet ka data fetch nahi ho paya.<br>'+
+            'Sheet <b>Share \u2192 Anyone with the link \u2192 Viewer</b> hona chahiye, fir <b>Refresh</b>. '+
+            'Ya <b>Setup \u2192 Paste mode</b> use karo.<br>'+
+            '<code>CSV: '+esc(csvErr.message)+' | gviz: '+esc(gvizErr.message)+'</code>');
         });
     });
-}
-function fail(html){
-  banner(html);
-  note('<a class="link" target="_blank" href="https://docs.google.com/spreadsheets/d/'+cfg.id+'/edit#gid='+cfg.gid+'">Open the sheet \u2197</a> \u00b7 <a class="link" href="#" id="openSetupLink">Open Setup</a>');
-  const l=document.getElementById("openSetupLink");
-  if(l) l.onclick=(e)=>{ e.preventDefault(); document.getElementById("setupDlg").showModal(); };
-  document.getElementById("grid").innerHTML="";
 }
 function afterLoad(src){
   banner("");
   document.getElementById("sendAllBtn").style.display = cfg.exec ? "inline-flex" : "none";
-  const p=ROWS.filter(r=>isFlagged(r)&&!isSent(r)).length;
-  const s=ROWS.filter(r=>isFlagged(r)&&isSent(r)).length;
+  var flagged=ROWS.filter(isFlagged);
+  var p=flagged.filter(function(r){return !isSent(r);}).length;
+  var s=flagged.filter(isSent).length;
   document.getElementById("cPending").textContent=p;
   document.getElementById("cSent").textContent=s;
-  note(`${src} &middot; ${ROWS.length} rows &middot; flagged &ldquo;Please check my remark&rdquo;: <b>${p+s}</b> &middot; `+
-       `<a class="link" target="_blank" href="https://docs.google.com/spreadsheets/d/${cfg.id}/edit#gid=${cfg.gid}">open sheet &#8599;</a>`);
+  var mode = cfg.exec ? "Auto-send ON" : "Gmail-compose mode";
+  note(src+" &middot; "+ROWS.length+" rows &middot; flagged: <b>"+(p+s)+"</b> &middot; "+mode+" &middot; "+
+       '<a target="_blank" href="https://docs.google.com/spreadsheets/d/'+cfg.id+'/edit#gid='+cfg.gid+'">open sheet &#8599;</a>');
   render();
 }
+function fail(html){
+  banner(html);
+  note('<a target="_blank" href="https://docs.google.com/spreadsheets/d/'+cfg.id+'/edit#gid='+cfg.gid+'">Open the sheet &#8599;</a> &middot; <a href="#" id="openSetupLink">Open Setup</a>');
+  var l=document.getElementById("openSetupLink");
+  if(l) l.onclick=function(e){ e.preventDefault(); document.getElementById("setupDlg").showModal(); };
+  document.getElementById("body").innerHTML="";
+}
 
-/* Fetch as CSV via the export endpoint. Returns array-of-arrays. */
 function fetchCsv(){
-  const url="https://docs.google.com/spreadsheets/d/"+encodeURIComponent(cfg.id)+
-            "/export?format=csv&gid="+encodeURIComponent(cfg.gid);
-  return fetch(url,{credentials:"omit"}).then(r=>{
+  var url="https://docs.google.com/spreadsheets/d/"+encodeURIComponent(cfg.id)+
+          "/export?format=csv&gid="+encodeURIComponent(cfg.gid);
+  return fetch(url,{credentials:"omit"}).then(function(r){
     if(!r.ok) throw new Error("HTTP "+r.status);
     return r.text();
-  }).then(txt=>{
+  }).then(function(txt){
     if(/^\s*<(!doctype|html)/i.test(txt)) throw new Error("got HTML (not shared)");
-    const rows=parseCSV(txt);
+    var rows=parseCSV(txt);
     if(!rows.length) throw new Error("empty");
-    // drop header row if it looks like the header
     if(/timestamp/i.test((rows[0][0]||""))) rows.shift();
     return rows;
   });
 }
-
-/* Proper CSV parser (handles quotes, commas, newlines inside cells). */
 function parseCSV(text){
-  const rows=[]; let row=[], cur="", i=0, q=false; text=text.replace(/\r/g,"");
+  var rows=[], row=[], cur="", i=0, q=false; text=text.replace(/\r/g,"");
   while(i<text.length){
-    const ch=text[i];
-    if(q){
-      if(ch==='"'){ if(text[i+1]==='"'){cur+='"';i+=2;continue;} q=false;i++;continue; }
-      cur+=ch;i++;continue;
-    }
+    var ch=text[i];
+    if(q){ if(ch==='"'){ if(text[i+1]==='"'){cur+='"';i+=2;continue;} q=false;i++;continue; } cur+=ch;i++;continue; }
     if(ch==='"'){ q=true;i++;continue; }
     if(ch===','){ row.push(cur);cur="";i++;continue; }
     if(ch==='\n'){ row.push(cur);rows.push(row);row=[];cur="";i++;continue; }
     cur+=ch;i++;
   }
   if(cur!==""||row.length){ row.push(cur);rows.push(row); }
-  return rows.filter(r=>r.some(c=>String(c).trim()!=="")).map(r=>r.map(c=>String(c).trim()));
+  return rows.filter(function(r){return r.some(function(c){return String(c).trim()!=="";});})
+             .map(function(r){return r.map(function(c){return String(c).trim();});});
 }
-
-/* JSONP fetch via gviz \u2014 fallback path. */
+function parseTSV(txt){
+  var lines=txt.replace(/\r/g,"").split("\n").filter(function(l){return l.length;});
+  var rows=lines.map(function(l){return l.split("\t").map(function(c){return c.trim();});});
+  if(rows.length && /timestamp/i.test(rows[0][0]||"")) rows.shift();
+  return rows;
+}
 function fetchGviz(){
-  return new Promise((resolve,reject)=>{
-    const cbName="__pqd_cb_"+Date.now();
+  return new Promise(function(resolve,reject){
+    var cbName="__pqd_cb_"+Date.now();
     window.google=window.google||{}; window.google.visualization=window.google.visualization||{};
-    const url="https://docs.google.com/spreadsheets/d/"+encodeURIComponent(cfg.id)+
-              "/gviz/tq?tqx=out:json;responseHandler:"+cbName+"&gid="+encodeURIComponent(cfg.gid)+"&headers=1";
-    const s=document.createElement("script"); let done=false;
-    const to=setTimeout(()=>{ if(!done){cleanup();reject(new Error("timeout"));} },10000);
-    window[cbName]=(resp)=>{
+    var url="https://docs.google.com/spreadsheets/d/"+encodeURIComponent(cfg.id)+
+            "/gviz/tq?tqx=out:json;responseHandler:"+cbName+"&gid="+encodeURIComponent(cfg.gid)+"&headers=1";
+    var s=document.createElement("script"); var done=false;
+    var to=setTimeout(function(){ if(!done){cleanup();reject(new Error("timeout"));} },10000);
+    window[cbName]=function(resp){
       done=true; clearTimeout(to);
       try{
         if(!resp||!resp.table) throw new Error("no table");
-        const out=[];
-        resp.table.rows.forEach(r=>{
-          const cells=(r.c||[]).map(c=>{ if(!c) return ""; return (c.f!=null? c.f : (c.v!=null? c.v : "")); });
-          out.push(cells.map(x=>String(x).trim()));
+        var out=[];
+        resp.table.rows.forEach(function(r){
+          var cells=(r.c||[]).map(function(c){ if(!c) return ""; return (c.f!=null? c.f : (c.v!=null? c.v : "")); });
+          out.push(cells.map(function(x){return String(x).trim();}));
         });
         resolve(out);
       }catch(e){ reject(e); } finally{ cleanup(); }
     };
-    s.onerror=()=>{ if(!done){clearTimeout(to);cleanup();reject(new Error("script blocked / not shared"));} };
+    s.onerror=function(){ if(!done){clearTimeout(to);cleanup();reject(new Error("script blocked / not shared"));} };
     function cleanup(){ try{delete window[cbName];}catch(e){window[cbName]=undefined;} s.remove(); }
     s.src=url; document.body.appendChild(s);
   });
 }
-function parseTSV(txt){
-  const lines=txt.replace(/\r/g,"").split("\n").filter(l=>l.length);
-  const rows=lines.map(l=>l.split("\t").map(c=>c.trim()));
-  // drop header row if first cell looks like "Timestamp"
-  if(rows.length && /timestamp/i.test(rows[0][0]||"")) rows.shift();
-  return rows;
-}
 
 /* ---------- row helpers ---------- */
-const g=(r,i)=> (r[i]!=null? String(r[i]).trim() : "");
-const isFlagged=r=> g(r,C.financeRemark).toLowerCase()===TRIGGER;
-const isSent=r=> /sent/i.test(g(r,C.mailStatus));
-const keyOf=r=> g(r,C.timestamp)+"|"+g(r,C.appId)+"|"+g(r,C.email);
-const isLocalDone=r=> doneSet.has(keyOf(r));
-
+function g(r,i){ return (r[i]!=null? String(r[i]).trim() : ""); }
+function isFlagged(r){ return g(r,C.financeRemark).toLowerCase()===TRIGGER; }
+function isSent(r){ return /sent/i.test(g(r,C.mailStatus)) || doneSet.has(keyOf(r)); }
+function keyOf(r){ return g(r,C.timestamp)+"|"+g(r,C.appId)+"|"+g(r,C.email); }
 function firstName(email){
-  const local=(email.split("@")[0]||"").split(/[._-]/)[0]||"";
+  var local=(email.split("@")[0]||"").split(/[._-]/)[0]||"";
   return local? local.charAt(0).toUpperCase()+local.slice(1) : "Team";
 }
-function inr(n){ if(n==null||n==="") return ""; const num=Number(String(n).replace(/[, ]/g,"")); return isFinite(num)? "\u20B9"+num.toLocaleString("en-IN") : String(n); }
+function inr(n){ if(n==null||n==="") return ""; var num=Number(String(n).replace(/[, ]/g,"")); return isFinite(num)? "\u20B9"+num.toLocaleString("en-IN") : String(n); }
 
 /* ---------- email builders ---------- */
 function buildSubject(r){
-  const t=g(r,C.payType); return "Payment Request – App ID "+g(r,C.appId)+(t?(" – "+t):"")+" – Please Confirm";
+  var t=g(r,C.payType); return "Payment Request \u2013 App ID "+g(r,C.appId)+(t?(" \u2013 "+t):"")+" \u2013 Please Confirm";
 }
 function buildBody(r){
-  const L=[]; const push=(k,v)=>{ if(v) L.push(k+": "+v); };
-  L.push("Hi "+firstName(g(r,C.email))+",",""); 
+  var L=[]; function push(k,v){ if(v) L.push(k+": "+v); }
+  L.push("Hi "+firstName(g(r,C.email))+",","");
   L.push("We have reviewed the payment request you raised. Kindly check the finance remark below and confirm.","");
   push("App ID", g(r,C.appId));
   push("Payment Date", g(r,C.payDate));
@@ -454,167 +425,130 @@ function buildBody(r){
   push("Payment Type", g(r,C.payType));
   push("Payment Received From", g(r,C.receivedFrom));
   push("UTR / Bank Reference", g(r,C.utrRef));
-  if(g(r,C.spocRemark)){ L.push("",'Your remark: '+g(r,C.spocRemark)); }
+  if(g(r,C.spocRemark)){ L.push("","Your remark: "+g(r,C.spocRemark)); }
   L.push("","Finance remark: "+g(r,C.financeTeamRemark));
-  // bank-transfer details N..T (only if any present)
-  const det=[
+  var det=[
     ["PAY ID",g(r,C.payId)],["Amount",g(r,C.amt2)?inr(g(r,C.amt2)):""],["A/C No",g(r,C.accNo)],
     ["IFSC Code",g(r,C.ifsc)],["UTR / Bank Ref No",g(r,C.utr2)],["Date",g(r,C.txnDate)],["Payer Name",g(r,C.payerName)]
-  ].filter(d=>d[1]);
-  if(det.length){ L.push("","----- Payment details (bank transfer) -----"); det.forEach(d=>L.push(d[0]+": "+d[1])); }
+  ].filter(function(d){return d[1];});
+  if(det.length){ L.push("","----- Payment details (bank transfer) -----"); det.forEach(function(d){L.push(d[0]+": "+d[1]);}); }
   if(g(r,C.confirmation)) L.push("","Additional note: "+g(r,C.confirmation));
   L.push("","Please review and confirm at the earliest so we can update the system.","","Regards,",cfg.sender,cfg.team);
   return L.join("\n");
 }
 function gmailUrl(to,su,body){
-  const p=new URLSearchParams({view:"cm",fs:"1",to:to,su:su,body:body});
+  var p=new URLSearchParams({view:"cm",fs:"1",to:to,su:su,body:body});
   if(cfg.cc) p.set("cc",cfg.cc);
   return "https://mail.google.com/mail/?"+p.toString();
 }
-function mailtoUrl(to,su,body){
-  let u="mailto:"+encodeURIComponent(to)+"?subject="+encodeURIComponent(su)+"&body="+encodeURIComponent(body);
-  if(cfg.cc) u+="&cc="+encodeURIComponent(cfg.cc);
-  return u;
-}
 
-/* ---------- Apps Script auto-send helpers ---------- */
+/* ---------- Apps Script auto-send ---------- */
 function sendViaScript(r, subject, body){
-  const to=g(r,C.email);
-  const payload={ rowKey:keyOf(r), appId:g(r,C.appId), timestamp:g(r,C.timestamp),
+  var to=g(r,C.email);
+  var payload={ rowKey:keyOf(r), appId:g(r,C.appId), timestamp:g(r,C.timestamp),
     to:to, cc:cfg.cc||"", subject:subject, body:body };
   return fetch(cfg.exec,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)})
-    .then(res=>res.text()).then(txt=>{
-      let ok=/success|sent|ok/i.test(txt);
-      try{ const j=JSON.parse(txt); ok=(j.status==="success"||j.ok===true); }catch(e){}
+    .then(function(res){return res.text();}).then(function(txt){
+      var ok=/success|sent|ok/i.test(txt);
+      try{ var j=JSON.parse(txt); ok=(j.status==="success"||j.ok===true); }catch(e){}
       if(!ok) throw new Error(txt.slice(0,100)||"unknown");
       return true;
     });
 }
+function doSend(r, btn){
+  var to=g(r,C.email);
+  if(!to){ toast("Is row me SPOC email nahi hai"); return; }
+  if(cfg.exec){
+    var old=btn.innerHTML; btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Sending';
+    sendViaScript(r, buildSubject(r), buildBody(r))
+      .then(function(){ toast("Mail sent \u2713  App "+g(r,C.appId)); doneSet.add(keyOf(r)); saveDone(); setTimeout(load,700); })
+      .catch(function(err){ toast("Send fail: "+err.message); btn.disabled=false; btn.innerHTML=old; });
+  } else {
+    window.open(gmailUrl(to,buildSubject(r),buildBody(r)),"_blank");
+    toast("Gmail khul gaya \u2014 Send dabao. (Auto-send ke liye Setup me URL daalo)");
+  }
+}
 function sendAllPending(){
-  const pending=ROWS.filter(r=>isFlagged(r)&&!isSent(r)&&g(r,C.email));
+  var pending=ROWS.filter(function(r){return isFlagged(r)&&!isSent(r)&&g(r,C.email);});
   if(!pending.length){ toast("Koi pending mail nahi"); return; }
-  if(!confirm(pending.length+" pending mails bhejne hain? Ye seedha SPOCs ko chale jaayenge.")) return;
-  const btn=document.getElementById("sendAllBtn"); btn.disabled=true;
-  let i=0, okC=0, failC=0;
+  if(!confirm(pending.length+" pending mails bhejni hain? Ye seedha SPOCs ko chali jaayengi.")) return;
+  var btn=document.getElementById("sendAllBtn"); btn.disabled=true;
+  var i=0, okC=0, failC=0;
   (function next(){
     if(i>=pending.length){ btn.disabled=false; toast("Done: "+okC+" sent, "+failC+" failed"); setTimeout(load,800); return; }
-    const r=pending[i++];
+    var r=pending[i++];
     note('<span class="spinner"></span>&nbsp; Sending '+i+'/'+pending.length+' \u2014 App '+g(r,C.appId));
     sendViaScript(r, buildSubject(r), buildBody(r))
-      .then(()=>{ okC++; doneSet.add(keyOf(r)); saveDone(); })
-      .catch(()=>{ failC++; })
-      .finally(()=>setTimeout(next,500));  // small gap to avoid Gmail rate limits
+      .then(function(){ okC++; doneSet.add(keyOf(r)); saveDone(); })
+      .catch(function(){ failC++; })
+      .then(function(){ setTimeout(next,500); });
   })();
 }
 
 /* ---------- render ---------- */
 function render(){
-  const q=document.getElementById("search").value.trim().toLowerCase();
-  let list=ROWS.filter(isFlagged);
-  if(view==="pending") list=list.filter(r=>!isSent(r));
+  var q=document.getElementById("search").value.trim().toLowerCase();
+  var list=ROWS.filter(isFlagged);
+  if(view==="pending") list=list.filter(function(r){return !isSent(r);});
   else if(view==="sent") list=list.filter(isSent);
-  if(q) list=list.filter(r=> r.join(" ").toLowerCase().includes(q));
+  if(q) list=list.filter(function(r){ return r.join(" ").toLowerCase().indexOf(q)>=0; });
 
-  const grid=document.getElementById("grid"); grid.innerHTML="";
+  var tb=document.getElementById("body"); tb.innerHTML="";
   if(!list.length){
-    grid.innerHTML='<div class="empty"><div class="big">Kuch nahi mila</div>'+
-      (view==="pending"?'Abhi koi request “Please check my remark” pe pending nahi hai. 🎉':'Is filter me koi item nahi.')+'</div>';
+    var span=COLS.length+1;
+    tb.innerHTML='<tr><td class="act" style="position:static;box-shadow:none"></td></tr>'; // placeholder cleared below
+    tb.innerHTML='<tr><td colspan="'+span+'"><div class="empty"><div class="big">Kuch nahi mila</div>'+
+      (view==="pending"?'Abhi koi request \u201cPlease check my remark\u201d pe pending nahi hai. \ud83c\udf89':'Is filter me koi item nahi.')+'</div></td></tr>';
     return;
   }
-  list.forEach((r,idx)=>grid.appendChild(cardEl(r,idx)));
+  list.forEach(function(r){ tb.appendChild(rowEl(r)); });
 }
+function rowEl(r){
+  var sent=isSent(r);
+  var tr=document.createElement("tr");
+  if(sent) tr.className="isSent";
 
-function cardEl(r){
-  const sent=isSent(r), done=isLocalDone(r);
-  const el=document.createElement("div");
-  el.className="card"+(sent?" isSent":"")+(done&&!sent?" localDone":"");
-  const su=buildSubject(r), body=buildBody(r), to=g(r,C.email);
+  COLS.forEach(function(c){
+    var td=document.createElement("td");
+    var raw=g(r,c.k);
+    if(c.cls.indexOf("num")>=0){ td.className="num"; td.textContent = raw? (c.k===C.amount||c.k===C.amt2? inr(raw): raw) : "\u2014"; }
+    else if(c.cls.indexOf("tagcol")>=0){ td.innerHTML = raw? '<span class="tag">'+esc(raw)+'</span>' : "\u2014"; }
+    else if(c.cls.indexOf("flag")>=0){ td.innerHTML = '<span class="flagcell">'+esc(raw||"\u2014")+'</span>'; }
+    else{
+      if(c.cls.indexOf("wrap")>=0) td.className="wrap"+(c.cls.indexOf("me")>=0?" remark-me":"");
+      else if(c.cls.indexOf("mono")>=0) td.className="mono";
+      else if(c.cls.indexOf("appid")>=0) td.className="appid";
+      td.textContent = raw || "\u2014";
+      td.title = raw;
+    }
+    tr.appendChild(td);
+  });
 
-  const detailRows=[
-    ["PAY ID",g(r,C.payId),true],["Amount",g(r,C.amt2)?inr(g(r,C.amt2)):"",false],
-    ["A/C No",g(r,C.accNo),true],["IFSC",g(r,C.ifsc),true],
-    ["UTR / Ref",g(r,C.utr2),true],["Date",g(r,C.txnDate),false],["Payer",g(r,C.payerName),false]
-  ].filter(d=>d[1]);
-
-  el.innerHTML=`
-    <div class="chead">
-      <div class="appid"><span class="k">App&nbsp;ID</span><span class="mono">${esc(g(r,C.appId))||"—"}</span></div>
-      ${g(r,C.payType)?`<span class="tag type">${esc(g(r,C.payType))}</span>`:""}
-      <span class="tag ${sent?"sentT":"flagT"}">${sent?"Mail sent":"Awaiting confirmation"}</span>
-      ${done&&!sent?`<span class="tag" style="color:var(--sent);border-color:var(--sent-dim)">✓ marked done</span>`:""}
-      <div class="to"><div class="lbl">To (SPOC)</div><div class="addr">${esc(to)||"— no email —"}</div></div>
-    </div>
-    <div class="cbody">
-      <div class="col left">
-        <div class="section-h">Payment</div>
-        <dl class="kv">
-          <dt>Amount</dt><dd class="mono">${esc(g(r,C.amount)?inr(g(r,C.amount)):"—")}</dd>
-          <dt>Date</dt><dd>${esc(g(r,C.payDate))||"—"}</dd>
-          <dt>Method</dt><dd>${esc(g(r,C.method))||"—"}</dd>
-          <dt>Received from</dt><dd>${esc(g(r,C.receivedFrom))||"—"}</dd>
-          <dt>UTR / Bank ref</dt><dd class="mono">${esc(g(r,C.utrRef))||"—"}</dd>
-        </dl>
-        ${g(r,C.spocRemark)?`<div class="section-h" style="margin-top:14px">SPOC remark</div><div class="remark-box spoc-remark">${esc(g(r,C.spocRemark))}</div>`:""}
-        ${detailRows.length?`<div class="section-h" style="margin-top:14px">Details (N–T)</div><dl class="kv">${detailRows.map(d=>`<dt>${d[0]}</dt><dd class="${d[2]?"mono":""}">${esc(d[1])}</dd>`).join("")}</dl>`:""}
-      </div>
-      <div class="col right">
-        <div class="section-h">Your remark (col M)</div>
-        <div class="remark-box">${esc(g(r,C.financeTeamRemark))||"— empty —"}</div>
-        <div class="mailField">
-          <label>Subject</label>
-          <input class="fSub" value="${escAttr(su)}"/>
-        </div>
-        <div class="mailField">
-          <label>Email body — edit karke bhej sakte ho</label>
-          <textarea class="fBody" rows="11">${esc(body)}</textarea>
-        </div>
-      </div>
-    </div>
-    <div class="cfoot">
-      <button class="send fSend"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg><span class="sendLbl">${cfg.exec?"Send mail":"Open in Gmail"}</span></button>
-      ${cfg.exec?'<button class="btn ghost fGmail">Gmail compose</button>':'<button class="btn ghost fMailto">Default mail app</button>'}
-      <button class="btn ghost fCopy">Copy email</button>
-      <div class="spacer"></div>
-      <button class="btn ghost fDone">${done?"Undo done":"Mark as emailed"}</button>
-    </div>`;
-
-  const getSub=()=>el.querySelector(".fSub").value;
-  const getBody=()=>el.querySelector(".fBody").value;
-  const sendBtn=el.querySelector(".fSend");
-
-  if(cfg.exec){
-    // TRUE auto-send via Apps Script Web App
-    sendBtn.onclick=()=>{
-      if(!to){ toast("Is row me SPOC email nahi hai"); return; }
-      const lbl=el.querySelector(".sendLbl"); const old=lbl.textContent;
-      sendBtn.disabled=true; lbl.textContent="Sending…";
-      sendViaScript(r, getSub(), getBody())
-        .then(()=>{ toast("Mail sent \u2713  App "+g(r,C.appId)); doneSet.add(keyOf(r)); saveDone();
-                    setTimeout(load,700); })
-        .catch(err=>{ toast("Send fail: "+err.message); sendBtn.disabled=false; lbl.textContent=old; });
-    };
-    const gm=el.querySelector(".fGmail"); if(gm) gm.onclick=()=>window.open(gmailUrl(to,getSub(),getBody()),"_blank");
+  // action cell
+  var act=document.createElement("td"); act.className="act";
+  if(sent){
+    var when = g(r,C.mailStatus) || "Sent";
+    act.innerHTML='<span class="sentBadge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5"/></svg>Sent</span>';
+    var rb=document.createElement("button"); rb.className="resend"; rb.textContent="Resend";
+    rb.title=when; rb.onclick=function(){ doSend(r, rb); };
+    act.appendChild(rb);
   } else {
-    // Gmail-compose mode (default, static)
-    sendBtn.onclick=()=>{ window.open(gmailUrl(to,getSub(),getBody()),"_blank"); };
-    const mt=el.querySelector(".fMailto"); if(mt) mt.onclick=()=>{ window.location.href=mailtoUrl(to,getSub(),getBody()); };
+    var b=document.createElement("button"); b.className="sendBtn";
+    b.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>Send Mail';
+    b.onclick=function(){ doSend(r, b); };
+    act.appendChild(b);
   }
-  el.querySelector(".fCopy").onclick=()=>{
-    navigator.clipboard.writeText("To: "+to+(cfg.cc?("\nCc: "+cfg.cc):"")+"\nSubject: "+getSub()+"\n\n"+getBody())
-      .then(()=>toast("Email copied to clipboard")); };
-  el.querySelector(".fDone").onclick=()=>{
-    const k=keyOf(r); if(doneSet.has(k))doneSet.delete(k); else doneSet.add(k);
-    saveDone(); render(); };
-  return el;
+  tr.appendChild(act);
+  return tr;
 }
 
 /* ---------- utils ---------- */
-function esc(s){ return String(s==null?"":s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
-function escAttr(s){ return esc(s).replace(/"/g,"&quot;"); }
+function esc(s){ return String(s==null?"":s).replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c];}); }
 function note(html){ document.getElementById("statusNote").innerHTML=html; }
-function banner(html){ const b=document.getElementById("errBanner"); if(!b) return; b.innerHTML=html; b.style.display=html? "block":"none"; }
-let toastT; function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show");
-  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),1900); }
+function banner(html){ var b=document.getElementById("errBanner"); if(!b) return; b.innerHTML=html; b.style.display=html? "block":"none"; }
+var toastT;
+function toast(msg){ var t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show");
+  clearTimeout(toastT); toastT=setTimeout(function(){t.classList.remove("show");},2200); }
 </script>
 </body>
 </html>
