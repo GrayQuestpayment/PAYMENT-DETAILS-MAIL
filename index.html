@@ -88,6 +88,11 @@
     color:var(--muted); font-size:12.5px; padding:10px 22px 0; max-width:1120px; margin:0 auto;
   }
   .note code{background:var(--panel-2); border:1px solid var(--line); border-radius:5px; padding:1px 6px; font-family:'JetBrains Mono',monospace; font-size:11.5px}
+  #errBanner{max-width:1120px; margin:12px auto 0; padding:14px 18px; border-radius:11px;
+    background:rgba(244,117,107,.09); border:1px solid rgba(244,117,107,.4); border-left:3px solid var(--danger);
+    color:#ffd9d4; font-size:13px; line-height:1.65}
+  #errBanner b{color:#fff}
+  #errBanner .mono{font-size:11px}
 
   /* ---- Card ---- */
   .grid{display:flex; flex-direction:column; gap:14px; margin-top:14px}
@@ -193,6 +198,7 @@
   <button class="btn ghost" id="setupBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6h.09A1.65 1.65 0 0 0 10.5 3.09V3a2 2 0 0 1 4 0v.09A1.65 1.65 0 0 0 16 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 22.91 9H23a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Setup</button>
 </div>
 
+<div id="errBanner" style="display:none"></div>
 <p class="note" id="statusNote"></p>
 
 <main>
@@ -297,15 +303,43 @@ const setVal=(id,v)=>document.getElementById(id).value=v||"";
 
 /* ---------- data loading ---------- */
 function load(){
-  note('<span class="spinner"></span>&nbsp; Loading…');
-  if(cfg.paste){ try{ ROWS=parseTSV(cfg.paste); afterLoad("Paste mode"); }catch(e){ note("Paste parse error: "+e.message);} return; }
-  fetchGviz().then(rows=>{ ROWS=rows; afterLoad("Live sheet"); })
-    .catch(err=>{
-      note('Live read fail hua ('+err.message+'). Sheet ko <b>Anyone with link → Viewer</b> karo, ya <b>Setup → Paste mode</b> use karo. '+
-           '<a class="link" href="https://docs.google.com/spreadsheets/d/'+cfg.id+'/edit#gid='+cfg.gid+'" target="_blank">Open sheet ↗</a>');
+  banner("");  // clear any old error
+  note('<span class="spinner"></span>&nbsp; Loading\u2026');
+  // Paste mode wins if provided
+  if(cfg.paste){
+    try{ ROWS=parseTSV(cfg.paste); afterLoad("Paste mode"); }
+    catch(e){ fail("Paste parse error: "+esc(e.message)); }
+    return;
+  }
+  // 1) Try published/exported CSV (reliable text, easy to parse).
+  fetchCsv()
+    .then(rows=>{ ROWS=rows; afterLoad("Live sheet (CSV)"); })
+    .catch(csvErr=>{
+      // 2) Fall back to gviz JSONP.
+      note('<span class="spinner"></span>&nbsp; CSV se nahi aaya, dusra tareeka try kar raha hun\u2026');
+      fetchGviz()
+        .then(rows=>{ ROWS=rows; afterLoad("Live sheet (gviz)"); })
+        .catch(gvizErr=>{
+          fail(
+            'Sheet ka data fetch nahi ho paya.<br>'+
+            '<b>Sabse aam wajah:</b> sheet public nahi hai. Ise theek karo:<br>'+
+            '1. Sheet me <b>Share</b> \u2192 General access \u2192 <b>Anyone with the link \u2192 Viewer</b>.<br>'+
+            '2. Ya <b>File \u2192 Share \u2192 Publish to web</b> se publish karo.<br>'+
+            'Fir yahan <b>Refresh</b> dabao. Nahi to <b>Setup \u2192 Paste mode</b> use karo (private-safe).<br>'+
+            '<span class="mono" style="opacity:.6">CSV: '+esc(csvErr.message)+' | gviz: '+esc(gvizErr.message)+'</span>'
+          );
+        });
     });
 }
+function fail(html){
+  banner(html);
+  note('<a class="link" target="_blank" href="https://docs.google.com/spreadsheets/d/'+cfg.id+'/edit#gid='+cfg.gid+'">Open the sheet \u2197</a> \u00b7 <a class="link" href="#" id="openSetupLink">Open Setup</a>');
+  const l=document.getElementById("openSetupLink");
+  if(l) l.onclick=(e)=>{ e.preventDefault(); document.getElementById("setupDlg").showModal(); };
+  document.getElementById("grid").innerHTML="";
+}
 function afterLoad(src){
+  banner("");
   const p=ROWS.filter(r=>isFlagged(r)&&!isSent(r)).length;
   const s=ROWS.filter(r=>isFlagged(r)&&isSent(r)).length;
   document.getElementById("cPending").textContent=p;
@@ -315,27 +349,64 @@ function afterLoad(src){
   render();
 }
 
-/* JSONP fetch via gviz — bypasses CORS on GitHub Pages */
+/* Fetch as CSV via the export endpoint. Returns array-of-arrays. */
+function fetchCsv(){
+  const url="https://docs.google.com/spreadsheets/d/"+encodeURIComponent(cfg.id)+
+            "/export?format=csv&gid="+encodeURIComponent(cfg.gid);
+  return fetch(url,{credentials:"omit"}).then(r=>{
+    if(!r.ok) throw new Error("HTTP "+r.status);
+    return r.text();
+  }).then(txt=>{
+    if(/^\s*<(!doctype|html)/i.test(txt)) throw new Error("got HTML (not shared)");
+    const rows=parseCSV(txt);
+    if(!rows.length) throw new Error("empty");
+    // drop header row if it looks like the header
+    if(/timestamp/i.test((rows[0][0]||""))) rows.shift();
+    return rows;
+  });
+}
+
+/* Proper CSV parser (handles quotes, commas, newlines inside cells). */
+function parseCSV(text){
+  const rows=[]; let row=[], cur="", i=0, q=false; text=text.replace(/\r/g,"");
+  while(i<text.length){
+    const ch=text[i];
+    if(q){
+      if(ch==='"'){ if(text[i+1]==='"'){cur+='"';i+=2;continue;} q=false;i++;continue; }
+      cur+=ch;i++;continue;
+    }
+    if(ch==='"'){ q=true;i++;continue; }
+    if(ch===','){ row.push(cur);cur="";i++;continue; }
+    if(ch==='\n'){ row.push(cur);rows.push(row);row=[];cur="";i++;continue; }
+    cur+=ch;i++;
+  }
+  if(cur!==""||row.length){ row.push(cur);rows.push(row); }
+  return rows.filter(r=>r.some(c=>String(c).trim()!=="")).map(r=>r.map(c=>String(c).trim()));
+}
+
+/* JSONP fetch via gviz \u2014 fallback path. */
 function fetchGviz(){
   return new Promise((resolve,reject)=>{
     const cbName="__pqd_cb_"+Date.now();
+    window.google=window.google||{}; window.google.visualization=window.google.visualization||{};
     const url="https://docs.google.com/spreadsheets/d/"+encodeURIComponent(cfg.id)+
               "/gviz/tq?tqx=out:json;responseHandler:"+cbName+"&gid="+encodeURIComponent(cfg.gid)+"&headers=1";
     const s=document.createElement("script"); let done=false;
-    const to=setTimeout(()=>{ if(!done){cleanup();reject(new Error("timeout / access denied"));} },12000);
+    const to=setTimeout(()=>{ if(!done){cleanup();reject(new Error("timeout"));} },10000);
     window[cbName]=(resp)=>{
       done=true; clearTimeout(to);
       try{
-        const t=resp.table, out=[];
-        t.rows.forEach(r=>{
+        if(!resp||!resp.table) throw new Error("no table");
+        const out=[];
+        resp.table.rows.forEach(r=>{
           const cells=(r.c||[]).map(c=>{ if(!c) return ""; return (c.f!=null? c.f : (c.v!=null? c.v : "")); });
           out.push(cells.map(x=>String(x).trim()));
         });
         resolve(out);
       }catch(e){ reject(e); } finally{ cleanup(); }
     };
-    s.onerror=()=>{ if(!done){clearTimeout(to);cleanup();reject(new Error("network / not shared"));} };
-    function cleanup(){ delete window[cbName]; s.remove(); }
+    s.onerror=()=>{ if(!done){clearTimeout(to);cleanup();reject(new Error("script blocked / not shared"));} };
+    function cleanup(){ try{delete window[cbName];}catch(e){window[cbName]=undefined;} s.remove(); }
     s.src=url; document.body.appendChild(s);
   });
 }
@@ -486,6 +557,7 @@ function cardEl(r){
 function esc(s){ return String(s==null?"":s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
 function escAttr(s){ return esc(s).replace(/"/g,"&quot;"); }
 function note(html){ document.getElementById("statusNote").innerHTML=html; }
+function banner(html){ const b=document.getElementById("errBanner"); if(!b) return; b.innerHTML=html; b.style.display=html? "block":"none"; }
 let toastT; function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show");
   clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),1900); }
 </script>
