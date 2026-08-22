@@ -305,8 +305,8 @@ function initSetupForm(){
   setVal("cfgTeam",cfg.team); setVal("cfgCc",cfg.cc); setVal("cfgExec",cfg.exec);
   document.getElementById("cfgPaste").value = cfg.paste||"";
 }
-const val=id=>document.getElementById(id).value.trim();
-const setVal=(id,v)=>document.getElementById(id).value=v||"";
+function val(id){ return document.getElementById(id).value.trim(); }
+function setVal(id,v){ document.getElementById(id).value=v||""; }
 
 /* ---------- data loading ---------- */
 function load(){
