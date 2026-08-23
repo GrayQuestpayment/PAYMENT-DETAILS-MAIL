@@ -65,6 +65,15 @@
     background:rgba(244,117,107,.09); border:1px solid rgba(244,117,107,.4); border-left:3px solid var(--danger);
     color:#ffd9d4; font-size:12.5px; line-height:1.6; display:none}
   #errBanner b{color:#fff}
+  #summaryBar{display:flex; gap:12px; flex-wrap:wrap; padding:12px 20px 2px}
+  .sumCard{flex:1 1 auto; min-width:150px; background:var(--panel); border:1px solid var(--line);
+    border-radius:10px; padding:11px 14px; display:flex; flex-direction:column; gap:2px}
+  .sumCard .lbl{font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted)}
+  .sumCard .val{font-family:'Space Grotesk',sans-serif; font-size:20px; font-weight:700}
+  .sumCard.pend{border-left:3px solid var(--flag)}
+  .sumCard.amt{border-left:3px solid var(--focus)}
+  .sumCard.done{border-left:3px solid var(--sent)}
+  .sumCard .val.amtv{font-family:'JetBrains Mono',monospace; font-size:18px}
   #errBanner code{background:#1c1116; border:1px solid #4a2a2a; border-radius:5px; padding:1px 6px; font-family:'JetBrains Mono',monospace; font-size:11px}
 
   /* ---- Spreadsheet ---- */
@@ -125,6 +134,21 @@
   .hint code{background:var(--panel-2); border:1px solid var(--line); border-radius:5px; padding:1px 6px; font-family:'JetBrains Mono',monospace; font-size:11px}
   .warnbox{margin-top:14px; padding:10px 12px; border-radius:8px; background:rgba(255,176,32,.08); border:1px solid rgba(255,176,32,.35); color:#ffe4ad; font-size:12px; line-height:1.55}
   :focus-visible{outline:2px solid var(--focus); outline-offset:2px}
+
+  /* theme picker dock */
+  #themeDock{position:fixed; right:14px; top:50%; transform:translateY(-50%); z-index:70; display:flex; align-items:center; gap:8px}
+  #themeToggle{width:34px;height:34px;border-radius:50%;border:2px solid var(--line);background:var(--panel);cursor:pointer;
+    display:flex;align-items:center;justify-content:center;padding:0;box-shadow:0 4px 14px rgba(0,0,0,.4)}
+  #themeToggle:hover{border-color:#33445f}
+  .tSwatch{width:18px;height:18px;border-radius:50%;display:inline-block;background:var(--flag)}
+  #themePalette{display:none; flex-direction:column; gap:8px; background:var(--panel); border:1px solid var(--line);
+    border-radius:12px; padding:10px; box-shadow:0 8px 30px rgba(0,0,0,.5)}
+  #themePalette.open{display:flex}
+  #themePalette .swrow{display:flex; gap:8px}
+  .swatch{width:22px;height:22px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:transform .12s}
+  .swatch:hover{transform:scale(1.15)}
+  .swatch.sel{border-color:#fff; box-shadow:0 0 0 2px rgba(255,255,255,.25)}
+  @media (max-width:640px){ #themeDock{top:auto; bottom:14px; transform:none} }
 </style>
 </head>
 <body>
@@ -152,6 +176,7 @@
 </div>
 
 <div id="errBanner"></div>
+<div id="summaryBar" style="display:none"></div>
 <p class="note" id="statusNote"></p>
 
 <div class="tableWrap">
@@ -164,6 +189,11 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<div id="themeDock" title="Theme color">
+  <button id="themeToggle" aria-label="Change theme color"><span class="tSwatch" id="tSwatchCur"></span></button>
+  <div id="themePalette"></div>
+</div>
 
 <!-- Setup -->
 <dialog id="setupDlg">
@@ -210,6 +240,20 @@ var DEFAULTS = {
 };
 var TRIGGER = "please check my remark";  // column L value that flags a row
 
+/* 10 professional accent colors for the theme picker */
+var THEMES = [
+  {n:"Amber",  c:"#F5A623"},
+  {n:"Blue",   c:"#3B82F6"},
+  {n:"Indigo", c:"#6366F1"},
+  {n:"Violet", c:"#8B5CF6"},
+  {n:"Teal",   c:"#14B8A6"},
+  {n:"Emerald",c:"#10B981"},
+  {n:"Rose",   c:"#F43F5E"},
+  {n:"Cyan",   c:"#06B6D4"},
+  {n:"Orange", c:"#FB923C"},
+  {n:"Slate",  c:"#64748B"}
+];
+
 /* Column map (0-indexed, A..V) */
 var C = {
   timestamp:0, email:1, payDate:2, appId:3, amount:4, method:5, utrRef:6,
@@ -254,10 +298,41 @@ var view = "pending";
 /* ---------- boot ---------- */
 initSetupForm();
 buildHead();
+initTheme();
 bindUI();
 load();
 
 /* ============================================================ */
+function initTheme(){
+  var saved=localStorage.getItem("pqd_theme")||THEMES[0].c;
+  applyTheme(saved);
+  var pal=document.getElementById("themePalette");
+  var rows=[[],[]];
+  THEMES.forEach(function(t,i){ rows[i<5?0:1].push(t); });
+  pal.innerHTML = rows.map(function(row){
+    return '<div class="swrow">'+row.map(function(t){
+      return '<span class="swatch" title="'+t.n+'" data-c="'+t.c+'" style="background:'+t.c+'"></span>';
+    }).join("")+'</div>';
+  }).join("");
+  pal.querySelectorAll(".swatch").forEach(function(sw){
+    sw.onclick=function(){ applyTheme(sw.dataset.c); localStorage.setItem("pqd_theme",sw.dataset.c);
+      markSelected(sw.dataset.c); document.getElementById("themePalette").classList.remove("open"); };
+  });
+  markSelected(saved);
+  document.getElementById("themeToggle").onclick=function(e){
+    e.stopPropagation(); document.getElementById("themePalette").classList.toggle("open"); };
+  document.addEventListener("click",function(){ document.getElementById("themePalette").classList.remove("open"); });
+  document.getElementById("themePalette").addEventListener("click",function(e){ e.stopPropagation(); });
+}
+function applyTheme(c){
+  document.documentElement.style.setProperty("--flag", c);
+  document.documentElement.style.setProperty("--focus", c);
+  var sw=document.getElementById("tSwatchCur"); if(sw) sw.style.background=c;
+}
+function markSelected(c){
+  document.querySelectorAll("#themePalette .swatch").forEach(function(s){
+    s.classList.toggle("sel", s.dataset.c===c); });
+}
 function loadCfg(){
   var s={}; try{ s=JSON.parse(localStorage.getItem("pqd_cfg")||"{}"); }catch(e){}
   return Object.assign({}, DEFAULTS, s);
@@ -322,14 +397,32 @@ function afterLoad(src){
   banner("");
   document.getElementById("sendAllBtn").style.display = cfg.exec ? "inline-flex" : "none";
   var flagged=ROWS.filter(isFlagged);
-  var p=flagged.filter(function(r){return !isSent(r);}).length;
+  var pendRows=flagged.filter(function(r){return !isSent(r);});
+  var p=pendRows.length;
   var s=flagged.filter(isSent).length;
   document.getElementById("cPending").textContent=p;
   document.getElementById("cSent").textContent=s;
+  renderSummary(pendRows, p, s);
   var mode = cfg.exec ? "Auto-send ON" : "Gmail-compose mode";
   note(src+" &middot; "+ROWS.length+" rows &middot; flagged: <b>"+(p+s)+"</b> &middot; "+mode+" &middot; "+
        '<a target="_blank" href="https://docs.google.com/spreadsheets/d/'+cfg.id+'/edit#gid='+cfg.gid+'">open sheet &#8599;</a>');
   render();
+}
+function amtNum(v){ if(v==null||v==="") return 0; var n=Number(String(v).replace(/[, ]/g,"")); return isFinite(n)?n:0; }
+function renderSummary(pendRows, p, s){
+  var bar=document.getElementById("summaryBar");
+  var total=0, bySpoc={};
+  pendRows.forEach(function(r){
+    var a=amtNum(g(r,C.amount)); total+=a;
+    var em=g(r,C.email)||"unknown"; bySpoc[em]=(bySpoc[em]||0)+1;
+  });
+  var spocCount=Object.keys(bySpoc).length;
+  bar.style.display = (p+s)>0 ? "flex" : "none";
+  bar.innerHTML =
+    '<div class="sumCard pend"><span class="lbl">Pending queries</span><span class="val">'+p+'</span></div>'+
+    '<div class="sumCard amt"><span class="lbl">Pending amount</span><span class="val amtv">'+inr(total)+'</span></div>'+
+    '<div class="sumCard pend"><span class="lbl">SPOCs to follow up</span><span class="val">'+spocCount+'</span></div>'+
+    '<div class="sumCard done"><span class="lbl">Mails sent</span><span class="val">'+s+'</span></div>';
 }
 function fail(html){
   banner(html);
@@ -412,7 +505,7 @@ function inr(n){ if(n==null||n==="") return ""; var num=Number(String(n).replace
 
 /* ---------- email builders ---------- */
 function buildSubject(r){
-  var t=g(r,C.payType); return "Payment Request \u2013 App ID "+g(r,C.appId)+(t?(" \u2013 "+t):"")+" \u2013 Please Confirm";
+  var t=g(r,C.payType); return "Payment Request \u2013 App ID "+g(r,C.appId)+(t?(" \u2013 "+t):"");
 }
 function buildBody(r){
   var L=[]; function push(k,v){ if(v) L.push(k+": "+v); }
@@ -436,6 +529,36 @@ function buildBody(r){
   L.push("","Please review and confirm at the earliest so we can update the system.","","Regards,",cfg.sender,cfg.team);
   return L.join("\n");
 }
+/* HTML version — Finance remark highlighted yellow. Sent as htmlBody via Apps Script. */
+function buildHtmlBody(r){
+  function row(k,v){ return v? '<tr><td style="padding:2px 12px 2px 0;color:#555;white-space:nowrap">'+esc(k)+'</td><td style="padding:2px 0">'+esc(v)+'</td></tr>':''; }
+  var det=[
+    ["PAY ID",g(r,C.payId)],["Amount",g(r,C.amt2)?inr(g(r,C.amt2)):""],["A/C No",g(r,C.accNo)],
+    ["IFSC Code",g(r,C.ifsc)],["UTR / Bank Ref No",g(r,C.utr2)],["Date",g(r,C.txnDate)],["Payer Name",g(r,C.payerName)]
+  ].filter(function(d){return d[1];});
+  var detHtml = det.length ? '<div style="margin-top:14px"><div style="font-size:12px;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Payment details (bank transfer)</div><table style="border-collapse:collapse;font-size:14px">'+det.map(function(d){return row(d[0],d[1]);}).join("")+'</table></div>' : '';
+  var html =
+    '<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#222;line-height:1.6">'+
+      '<p>Hi '+esc(firstName(g(r,C.email)))+',</p>'+
+      '<p>We have reviewed the payment request you raised. Kindly check the <b>finance remark</b> below and confirm.</p>'+
+      '<table style="border-collapse:collapse;font-size:14px;margin:10px 0">'+
+        row("App ID", g(r,C.appId))+
+        row("Payment Date", g(r,C.payDate))+
+        row("Amount", g(r,C.amount)?inr(g(r,C.amount)):"")+
+        row("Method", g(r,C.method))+
+        row("Payment Type", g(r,C.payType))+
+        row("Payment Received From", g(r,C.receivedFrom))+
+        row("UTR / Bank Reference", g(r,C.utrRef))+
+      '</table>'+
+      (g(r,C.spocRemark)? '<p style="margin:8px 0"><span style="color:#555">Your remark:</span> '+esc(g(r,C.spocRemark))+'</p>':'')+
+      '<p style="margin:12px 0"><b>Finance remark:</b> <span style="background:#FFEB3B;padding:2px 6px;border-radius:3px;font-weight:600">'+esc(g(r,C.financeTeamRemark))+'</span></p>'+
+      detHtml+
+      (g(r,C.confirmation)? '<p style="margin:10px 0"><span style="color:#555">Additional note:</span> '+esc(g(r,C.confirmation))+'</p>':'')+
+      '<p style="margin-top:14px">Please review and confirm at the earliest so we can update the system.</p>'+
+      '<p style="margin-top:16px;color:#333">Regards,<br>'+esc(cfg.sender)+'<br>'+esc(cfg.team)+'</p>'+
+    '</div>';
+  return html;
+}
 function gmailUrl(to,su,body){
   var p=new URLSearchParams({view:"cm",fs:"1",to:to,su:su,body:body});
   if(cfg.cc) p.set("cc",cfg.cc);
@@ -446,7 +569,7 @@ function gmailUrl(to,su,body){
 function sendViaScript(r, subject, body){
   var to=g(r,C.email);
   var payload={ rowKey:keyOf(r), appId:g(r,C.appId), timestamp:g(r,C.timestamp),
-    to:to, cc:cfg.cc||"", subject:subject, body:body };
+    to:to, cc:cfg.cc||"", subject:subject, body:body, htmlBody:buildHtmlBody(r) };
   return fetch(cfg.exec,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)})
     .then(function(res){return res.text();}).then(function(txt){
       var ok=/success|sent|ok/i.test(txt);
