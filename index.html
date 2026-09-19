@@ -206,7 +206,7 @@
 
     <label>Auto-send Web App URL (Apps Script /exec)</label>
     <input id="cfgExec" class="mono" placeholder="https://script.google.com/macros/s/AKfy.../exec"/>
-    <div class="hint">Ye URL daalte hi &ldquo;Send Mail&rdquo; button <b>seedha mail bhej dega</b> (Gmail window nahi khulegi) aur sheet ke <b>Mail Status</b> column me &ldquo;Sent&rdquo; likh dega. URL na hone par button Gmail compose khol dega.</div>
+    <div class="hint">Enter this URL and the &ldquo;Send Mail&rdquo; button will <b>send the mail directly</b> (no Gmail window will open) and write &ldquo;Sent&rdquo; into the sheet&rsquo;s <b>Mail Status</b> column. Without the URL, the button opens Gmail compose instead.</div>
 
     <label>Your name (signature)</label>
     <input id="cfgSender" placeholder="Ganesh"/>
@@ -216,7 +216,7 @@
     <input id="cfgCc" class="mono" placeholder="finance@grayquest.com"/>
 
     <label>Paste mode (optional — private, no sharing needed)</label>
-    <div class="hint">Sheet me <code>A1:V</code> select → Copy → yahan paste. Ye live fetch ko override karega. Blank rakho to live sheet se aayega.</div>
+    <div class="hint">In the sheet, select <code>A1:V</code> → Copy → paste here. This overrides the live fetch. Leave blank to load from the live sheet.</div>
     <textarea id="cfgPaste" rows="3" class="mono" placeholder="Timestamp&#9;SPOC Email&#9;…"></textarea>
   </div>
   <div class="dlg-f">
@@ -232,7 +232,7 @@
 var DEFAULTS = {
   id:  "12S3TK7CuwxtTuLW7mf65b3VlfTew9GkZKSz9CqvibR8",
   gid: "1474374026",
-  exec: "",                 // <-- AutoSend.gs /exec URL yahan (ya Setup se)
+  exec: "",                 // <-- AutoSend.gs /exec URL here (or via Setup)
   sender: "Ganesh",
   team: "GrayQuest Finance Team",
   cc: "",
@@ -382,13 +382,13 @@ function load(){
   fetchCsv()
     .then(function(rows){ ROWS=rows; afterLoad("Live sheet"); })
     .catch(function(csvErr){
-      note('<span class="spinner"></span>&nbsp; dusra tareeka try kar raha hun\u2026');
+      note('<span class="spinner"></span>&nbsp; trying another method\u2026');
       fetchGviz()
         .then(function(rows){ ROWS=rows; afterLoad("Live sheet"); })
         .catch(function(gvizErr){
-          fail('Sheet ka data fetch nahi ho paya.<br>'+
-            'Sheet <b>Share \u2192 Anyone with the link \u2192 Viewer</b> hona chahiye, fir <b>Refresh</b>. '+
-            'Ya <b>Setup \u2192 Paste mode</b> use karo.<br>'+
+          fail('Could not fetch the sheet data.<br>'+
+            'The sheet must be <b>Share \u2192 Anyone with the link \u2192 Viewer</b>, then click <b>Refresh</b>. '+
+            'Or use <b>Setup \u2192 Paste mode</b>.<br>'+
             '<code>CSV: '+esc(csvErr.message)+' | gviz: '+esc(gvizErr.message)+'</code>');
         });
     });
@@ -505,7 +505,7 @@ function inr(n){ if(n==null||n==="") return ""; var num=Number(String(n).replace
 
 /* ---------- email builders ---------- */
 function buildSubject(r){
-  var t=g(r,C.payType); return "Payment Request \u2013 App ID "+g(r,C.appId)+(t?(" \u2013 "+t):"");
+  var t=g(r,C.payType); return "Payment request Failed - App id "+g(r,C.appId)+(t?(" - "+t):"");
 }
 function buildBody(r){
   var L=[]; function push(k,v){ if(v) L.push(k+": "+v); }
@@ -580,7 +580,7 @@ function sendViaScript(r, subject, body){
 }
 function doSend(r, btn){
   var to=g(r,C.email);
-  if(!to){ toast("Is row me SPOC email nahi hai"); return; }
+  if(!to){ toast("This row has no SPOC email"); return; }
   if(cfg.exec){
     var old=btn.innerHTML; btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Sending';
     sendViaScript(r, buildSubject(r), buildBody(r))
@@ -588,13 +588,13 @@ function doSend(r, btn){
       .catch(function(err){ toast("Send fail: "+err.message); btn.disabled=false; btn.innerHTML=old; });
   } else {
     window.open(gmailUrl(to,buildSubject(r),buildBody(r)),"_blank");
-    toast("Gmail khul gaya \u2014 Send dabao. (Auto-send ke liye Setup me URL daalo)");
+    toast("Gmail opened \u2014 click Send. (For auto-send, add the URL in Setup)");
   }
 }
 function sendAllPending(){
   var pending=ROWS.filter(function(r){return isFlagged(r)&&!isSent(r)&&g(r,C.email);});
-  if(!pending.length){ toast("Koi pending mail nahi"); return; }
-  if(!confirm(pending.length+" pending mails bhejni hain? Ye seedha SPOCs ko chali jaayengi.")) return;
+  if(!pending.length){ toast("No pending mails"); return; }
+  if(!confirm("Send "+pending.length+" pending mails? These will go directly to the SPOCs.")) return;
   var btn=document.getElementById("sendAllBtn"); btn.disabled=true;
   var i=0, okC=0, failC=0;
   (function next(){
@@ -620,8 +620,8 @@ function render(){
   if(!list.length){
     var span=COLS.length+1;
     tb.innerHTML='<tr><td class="act" style="position:static;box-shadow:none"></td></tr>'; // placeholder cleared below
-    tb.innerHTML='<tr><td colspan="'+span+'"><div class="empty"><div class="big">Kuch nahi mila</div>'+
-      (view==="pending"?'Abhi koi request \u201cPlease check my remark\u201d pe pending nahi hai. \ud83c\udf89':'Is filter me koi item nahi.')+'</div></td></tr>';
+    tb.innerHTML='<tr><td colspan="'+span+'"><div class="empty"><div class="big">Nothing found</div>'+
+      (view==="pending"?'No requests are pending on \u201cPlease check my remark\u201d right now. \ud83c\udf89':'No items in this filter.')+'</div></td></tr>';
     return;
   }
   list.forEach(function(r){ tb.appendChild(rowEl(r)); });
